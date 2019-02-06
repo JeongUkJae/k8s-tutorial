@@ -1,0 +1,26 @@
+version: "3.2"
+
+services:
+  db-server:
+    image: mariadb:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+        - ./db-server/init.sql:/docker-entrypoint-initdb.d/custom-init.sql
+    ports:
+      - '3306:3306'
+  redis-server:
+    image: redis:latest
+  auth-server:
+    build: auth-server/
+    volumes:
+      - ./auth-server/app:/app
+    depends_on:
+      - db-server
+      - redis-server
+    environment:
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    ports:
+      - '5000:5000'
