@@ -8,19 +8,21 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     volumes:
         - ./db-server/init.sql:/docker-entrypoint-initdb.d/custom-init.sql
-    ports:
-      - '3306:3306'
   redis-server:
     image: redis:latest
   auth-server:
     build: auth-server/
-    volumes:
-      - ./auth-server/app:/app
     depends_on:
       - db-server
       - redis-server
     environment:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
+  frontend-server:
+    build: frontend-server/
+    depends_on:
+      - auth-server
+    volumes:
+      - ./frontend-server/source:/var/www
     ports:
-      - '5000:5000'
+      - '80:80'
