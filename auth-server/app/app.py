@@ -58,7 +58,7 @@ def add_user():
 
     return jsonify({
         'message': '회원가입 완료'
-    }), 400
+    })
 
 @app.route('/signin', methods=['POST'])
 def signin():
