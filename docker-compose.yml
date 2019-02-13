@@ -10,6 +10,11 @@ services:
         - ./db-server/init.sql:/docker-entrypoint-initdb.d/custom-init.sql
   redis-server:
     image: redis:latest
+  rabbitmq-server:
+    image: rabbitmq:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
   auth-server:
     build: auth-server/
     depends_on:
