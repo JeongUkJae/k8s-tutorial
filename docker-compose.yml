@@ -28,12 +28,27 @@ services:
     build: resize-server/
     environment:
       - UPLOADING_PATH=/images
+      - RABBITMQ_CHANNEL=${RABBITMQ_CHANNEL}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
     volumes:
       - ./resize-server/app:/app
       - ./images:/images
     depends_on:
       - rabbitmq-server
       - auth-server
+  resize-worker:
+    build: resize-worker/
+    environment:
+      - UPLOADING_PATH=/images
+      - RABBITMQ_CHANNEL=${RABBITMQ_CHANNEL}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - ./images:/images
+    depends_on:
+      - rabbitmq-server
+      - resize-server
   frontend-server:
     build: frontend-server/
     depends_on:

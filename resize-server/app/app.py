@@ -2,6 +2,11 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 
 import os
+import pika
+
+connection = None
+channel = None
+queue_name = os.environ.get('RABBITMQ_CHANNEL')
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
@@ -14,7 +19,15 @@ def allowed_file(filename):
 
 @app.route('/resize', methods=['POST'])
 def resize():
-    print(request.files)
+    global connection, channel
+    if connection is None:
+        credentials = pika.PlainCredentials(os.environ.get('RABBITMQ_DEFAULT_USER'), os.environ.get('RABBITMQ_DEFAULT_PASS'))
+        parameters = pika.ConnectionParameters('rabbitmq-server',
+                                       credentials=credentials)
+        connection = pika.BlockingConnection(parameters)
+        channel = connection.channel()
+        channel.queue_declare(queue=queue_name)
+
     if 'image' not in request.files:
         return jsonify({
             'message': 'wrong request'
@@ -34,6 +47,10 @@ def resize():
 
     filename = secure_filename(file.filename)
     file.save(os.path.join(os.environ.get('UPLOADING_PATH'), filename))
+
+    channel.basic_publish(exchange='',
+                      routing_key=queue_name,
+                      body=filename)
     return jsonify({
         'message': 'success'
     })
