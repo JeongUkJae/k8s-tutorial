@@ -15,6 +15,7 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+
   auth-server:
     build: auth-server/
     depends_on:
@@ -23,10 +24,21 @@ services:
     environment:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
+  resize-server:
+    build: resize-server/
+    environment:
+      - UPLOADING_PATH=/images
+    volumes:
+      - ./resize-server/app:/app
+      - ./images:/images
+    depends_on:
+      - rabbitmq-server
+      - auth-server
   frontend-server:
     build: frontend-server/
     depends_on:
       - auth-server
+      - resize-server
     volumes:
       - ./frontend-server/source:/var/www
     ports:
